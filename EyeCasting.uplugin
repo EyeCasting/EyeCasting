@@ -1,0 +1,17 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "0.1",
+	"FriendlyName": "EyeCasting",
+	"Description": "EyeCasting offers an innovative solution for VR teleportation locomotion. This plugin utilizes eye tracking technology to enhance virtual reality experiences, allowing users to navigate and teleport within VR environments through intuitive eye movements. Our engine is powered by a sophisticated machine learning model, using TensorFlow and Keras, to accurately interpret gaze data. This approach significantly reduces motion sickness and offers a more natural form of VR traversal, particularly beneficial for educational and professional applications. The plugin is compatible with Meta Quest Pro and integrates seamlessly with Unreal Engine 5, providing developers with user-friendly APIs for easy implementation. Whether for gaming, education, or professional training, our plugin sets a new standard in VR locomotion, combining state-of-the-art technology with ease of use to deliver an immersive and comfortable VR experience.",
+	"Category": "Other",
+	"CreatedBy": "JoJo Petersky, Luna Perez-Herrera, Nathan Gomez, Zephyr Vincent",
+	"CreatedByURL": "https://github.com/hotcuppajojo/EyeCasting",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": true,
+	"IsExperimentalVersion": false,
+	"Installed": false
+}
