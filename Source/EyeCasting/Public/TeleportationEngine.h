@@ -20,15 +20,21 @@ public:
     // Existing declarations...
 
     UFUNCTION(BlueprintCallable, Category = "Teleportation")
-    void StartTeleportSequence();
+    bool StartTeleportSequence();
 
     UFUNCTION(BlueprintCallable, Category = "Teleportation")
-    void ActivateFisheyeView();
+    bool ActivateFisheyeView();
 
     UFUNCTION(BlueprintCallable, Category = "Teleportation")
     FVector GetRelativeGazeLocation();
 
-    // ... add other methods here
+    UFUNCTION(BlueprintCallable, Category = "Teleportation")
+    bool TeleportPlayer();
+
+    UFUNCTION(BlueprintCallable, Category = "Teleportation")
+    void CompleteTeleportSequence();
+
+    // figure out input from controller to trigger teleportation
 
 protected:
     virtual void BeginPlay() override;
@@ -38,10 +44,20 @@ protected:
     UFisheyeComponent* FisheyeComponent;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+    UEyeTrackingComponent* EyeTrackingComponent;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
     UDataFilteringComponent* DataFilteringComponent;
 
     // ... other component properties
 
     UPROPERTY(BlueprintAssignable, Category = "Teleportation")
     FTeleportEvent OnTeleportInitiated;
+
+private:
+    bool SyncHapticFeedback();
+    bool ConfirmTeleportDestination(FVector TeleportDestination);
+    bool InitiateFOVReduction();
+    bool RestoreNormalFOV();
+    bool TraverseToGazeLocation(FVector TeleportDestination);
 };
