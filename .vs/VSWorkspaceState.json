@@ -1,0 +1,15 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\Config",
+    "\\Content",
+    "\\Content\\FishEyeView",
+    "\\Resources",
+    "\\Source",
+    "\\Source\\EyeCasting",
+    "\\Source\\EyeCasting\\Private",
+    "\\Source\\EyeCasting\\Public"
+  ],
+  "SelectedNode": "\\Source\\EyeCasting\\Public\\FishEyeComponent.h",
+  "PreviewInSolutionExplorer": false
+}

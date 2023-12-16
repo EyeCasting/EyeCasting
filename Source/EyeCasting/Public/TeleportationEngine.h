@@ -7,7 +7,22 @@
 #include "EyeTrackingComponent.h"
 #include "FishEyeComponent.h"
 #include "DataFilteringComponent.h"
+
+// Unreal Libraries
+#include "UObject/ConstructorHelper.h"
+#include "Math/Vector.h"    // FVector
+#include "CoreFwd.h"        //FRotator
+#include "Math/Transform.h"
+
+// Unreal Teleport Library
 #include "TeleportationEngine.generated.h"
+
+// Unreal Camera Library
+#include "Camera/PlayerCameraManager.h"
+
+// Unreal Haptics Library
+#include "GameFramework/PlayerController.h"
+#include "Haptics/HapticFeedbackEffect_Base.h"
 
 UCLASS()
 class EYECasting_API ATeleportationEngine : public AActor
@@ -60,4 +75,8 @@ private:
     bool InitiateFOVReduction();
     bool RestoreNormalFOV();
     bool TraverseToGazeLocation(FVector TeleportDestination);
+
+    UHapticFeedbackEffect_Base teleportHapticEffect;
+    UHapticFeedbackEffect_Base fisheyeHapticEffect;
+    UHapticFeedbackEffect_Base selectionHapticEffect;
 };

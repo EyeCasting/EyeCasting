@@ -6,30 +6,38 @@ ATeleportationEngine::ATeleportationEngine()
     // Initialize components here
     FisheyeComponent = CreateDefaultSubobject<UFisheyeComponent>(TEXT("FisheyeComponent"));
     DataFilteringComponent = CreateDefaultSubobject<UDataFilteringComponent>(TEXT("DataFilteringComponent"));
+    EyeTrackingComponent = CreateDefaultSubobject<UDataFilteringComponent>(TEXT("EyeTrackingComponent"));
     // ... other component initializations
 }
 
 void ATeleportationEngine::BeginPlay()
 {
     Super::BeginPlay();
+
     // Initialization code here
+    SyncHapticFeedback();
 }
 
 bool ATeleportationEngine::StartTeleportSequence()
 {
-    // Implement the logic to start the teleportation sequence
-
-    if (!ActivateFisheyeView()) 
+    // check for all necessary components before starting teleport sequence
+    if (!FisheyeComponent) 
     {
-        // errors in activating fisheye view - troubleshooting
+        /* errors handling: fisheye component not activated */
+        return false;
+    }
+    else if (!EyeTrackingComponent)
+    {
+        /* errors handling: eye tracking component not activated */
+        return false;
+    }
+    else if (!DataFilteringComponent)
+    {
+        /* errors handling: data filtering component not activated */
         return false;
     }
 
-    if (!SyncHapticFeedback())
-    {
-        // errors in activating haptic sync
-        return false;
-    }
+    ActivateFisheyeView();
 
     return true;
 }
@@ -38,23 +46,23 @@ bool ATeleportationEngine::ActivateFisheyeView()
 {
     if (FisheyeComponent)
     {
-        // Call a method on the FisheyeComponent to activate the view
+        /* Alert Player of Change in View with Haptic Feedback */
+        APlayerController::PlayHapticEffect(fisheyeHapticEffect, Left, 1.0, 0);
+        APlayerController::PlayHapticEffect(fisheyeHapticEffect, Right, 1.0, 0);
 
-        // set parameters accordingly for UV, screensize, and fisheyeAngleRadians
-        
-        FVector2D UV, ScreenSize;
+        // set parameters accordingly for Screensize, and fisheyeAngleRadians
+        FVector2D ScreenSize;
 
         if (GEngine && GEngine->GameViewport)
         {
             ScreenSize = FVector2D(GEngine->GameViewport->Viewport->GetSizeXY());
         }
 
-        // set parameter FVector2D UV
-
         // set angle for user pov 
-        float FisheyeAngle = 3.14;  // 180 degrees initially
+        FRotator currentRotation = APlayerCameraManager::GetCameraRotation();
+        float FisheyeAngle = currentRotation.NormalizeAxis();
 
-        FisheyeComponent.ApplyFisheyeDistortion(UV, ScreenSize, FishEyeAngle);
+        FisheyeComponent.ApplyFisheyeDistortion(ScreenSize, FishEyeAngle);
 
         return true;
     }
@@ -62,9 +70,37 @@ bool ATeleportationEngine::ActivateFisheyeView()
 }
 
 
+// haptics integration
 bool ATeleportationEngine::SyncHapticFeedback()
 {
-    // haptics integration
+    ConstructorHelpers::FObjectFinder<UHapticFeedbackEffect_Base> teleportHapticFile(TEXT("/Game/teleportFeedback.haptic");
+    ConstructorHelpers::FObjectFinder<UHapticFeedbackEffect_Base> fisheyeHapticFile(TEXT("/Game/fisheyeFeedback.haptic");
+    ConstructorHelpers::FObjectFinder<UHapticFeedbackEffect_Base> selectionHapticFile(TEXT("/Game/selectionFeedback.haptic");
+    
+    if (teleportHapticFile) {
+        teleportationHapticEffect = teleportHapticFile.Object;
+    }
+    else {
+        /* error handling: no haptic file found */
+        return false;
+    }
+
+    if (fisheyeHapticFile) {
+        fisheyeHapticEffect = fisheyeHapticFile.Object;
+    }
+    else {
+        /* error handling: no haptic file found */
+        return false;
+    }
+
+    if (selectionHapticFile) {
+        selectionHapticEffect = selectionHapticFile.Object;
+    }
+    else {
+        /* error handling: no haptic file found */
+        return false;
+    }
+
     return true;
 }
 
@@ -75,7 +111,7 @@ FVector ATeleportationEngine::GetRelativeGazeLocation()
     {
         FVector FilteredGazeDirection = EyeTrackingComponent.GetGazeDirection();
 
-        // convert gaze direction into a teleportation destination
+        FVector = Transform::InverseTransformLocation(FilteredGazeDirection);
     }
     return FVector::ZeroVector; // Placeholder
 }
@@ -86,6 +122,10 @@ bool ATeleportationEngine::TeleportPlayer(FVector TeleportDestination)
 
     if (ConfirmTeleportDestination(TeleportDestination))
     {
+        /* Alert Player of Change in View with Haptic Feedback */
+        APlayerController::PlayHapticEffect(teleportHapticEffect, Left, 1.0, 0);
+        APlayerController::PlayHapticEffect(teleportHapticEffect, Right, 1.0, 0);
+
         if (InitiateFOVReduction())
         {
             teleportSuccessful = TraverseToGazeLocation(TeleportDestination);
@@ -127,7 +167,7 @@ bool ATeleportationEngine::RestoreNormalFOV()
 
 bool ATeleportationEngine::TraverseToGazeLocation(FVector TeleportDestination)
 {
-    // for now just using Unreal's teleport function
+
     return false;
 }
 
