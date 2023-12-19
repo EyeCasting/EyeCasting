@@ -16,8 +16,15 @@ DataFilteringComponent::~UDataFilteringComponent()
     // Empty destructor
 }
 
-void DataFilteringComponent::setGazeDataArray(FEyeTrackerGazeData[] gazeDataArray)
+// Set the gaze data array, filter it, expose the filtered gaze vector, and clear the gaze data array
+bool DataFilteringComponent::setGazeDataArray(FEyeTrackerGazeData[] gazeDataArray)
 {
+    // Check if the gaze data array is empty
+    if (std::size(gazeDataArray) == 0)
+    {
+        return false;
+    }
+
     this->gazeDataArray = gazeDataArray;
     switch (this->filteringMode)
     {
@@ -33,14 +40,20 @@ void DataFilteringComponent::setGazeDataArray(FEyeTrackerGazeData[] gazeDataArra
     case "Exclude Most Recent":
         this->filteredGazeVector = excludeMostRecent(this->gazeDataArray);
         break;
+    case "None":
+        this->filteredGazeVector = returnMostRecent(this->gazeDataArray);
+        break;
     default:
         this->filteredGazeVector = averageLastXVectors(this->gazeDataArray);
         break;
     }
 
     clearGazeDataArray();
+
+    return true;
 }
 
+// Set the filtering mode. Returns true if the filtering mode is valid, false otherwise.
 bool DataFilteringComponent::setFilteringMode(FString filteringMode)
 {
     switch (filteringMode)
@@ -61,6 +74,10 @@ bool DataFilteringComponent::setFilteringMode(FString filteringMode)
         this->filteringMode = filteringMode;
         return true;
         break;
+    case "None":
+        this->filteringMode = filteringMode;
+        return true;
+        break;
     default:
         this->filteringMode = "Average";
         return false;
@@ -70,11 +87,19 @@ bool DataFilteringComponent::setFilteringMode(FString filteringMode)
     return false;
 }
 
+// Return the filtered gaze vector
 FVector DataFilteringComponent::getFilteredGazeVector()
 {
     return this->filteredGazeVector;
 }
 
+// Return the filtering mode
+FString DataFilteringComponent::getFilteringMode()
+{
+    return this->filteringMode;
+}
+
+// Average the all the vectors in the array
 FVector DataFilteringComponent::averageLastXVectors(const FVector[] vector)
 {
     FVector averageVector = FVector(0);
@@ -89,6 +114,7 @@ FVector DataFilteringComponent::averageLastXVectors(const FVector[] vector)
     return averageVector;
 }
 
+// Take the median of the vectors in the array
 FVector DataFilteringComponent::medianLastXVectors(const FVector[] vector)
 {
     FVector medianVector = FVector(0);
@@ -106,6 +132,7 @@ FVector DataFilteringComponent::medianLastXVectors(const FVector[] vector)
     return medianVector;
 }
 
+// Exclude 2 outliers from the array. If the array size is less than 3, average the vectors in the array.
 FVector DataFilteringComponent::excludeOutlier(const FVector[] vector)
 {
     FVector excludedOutlierVector = FVector(0);
@@ -127,6 +154,7 @@ FVector DataFilteringComponent::excludeOutlier(const FVector[] vector)
     return excludedOutlierVector;
 }
 
+// Exclude the most recent vector from the array. If the array size is less than 2, average the vectors in the array.
 FVector DataFilteringComponent::excludeMostRecent(const FVector[] vector)
 {
     FVector excludedMostRecentVector = FVector(0);
@@ -146,6 +174,13 @@ FVector DataFilteringComponent::excludeMostRecent(const FVector[] vector)
     return excludedMostRecentVector;
 }
 
+// Return the most recent vector in the array
+FVector DataFilteringComponent::returnMostRecent(const FVector[] vector)
+{
+    return vector[std::size(vector) - 1];
+}
+
+// Clear the gaze data array
 void DataFilteringComponent::clearGazeDataArray()
 {
     this->gazeDataArray = nullptr;
