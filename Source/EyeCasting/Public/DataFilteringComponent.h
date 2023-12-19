@@ -9,24 +9,25 @@ class DataFilteringComponent : public USceneCaptureComponent2D
     GENERATED_BODY()
 
 public:
-    FEyeTrackerGazeData[] gazeDataArray;
-    FString filteringMode;
-
     UDataFilteringComponent();
     UDataFilteringComponent(const FObjectInitializer &ObjectInitializer);
     ~UDataFilteringComponent();
 
-    void setGazeDataArray(FEyeTrackerGazeData[] gazeDataArray);
+    bool setGazeDataArray(FEyeTrackerGazeData[] gazeDataArray);
     bool setFilteringMode(FString filteringMode);
 
     FVector getFilteredGazeVector();
+    FString getFilteringMode();
 
 private:
     FVector filteredGazeVector;
+    FEyeTrackerGazeData[] gazeDataArray;
+    FString filteringMode;
 
     FVector averageLastXVectors(const FVector[] vector);
     FVector medianLastXVectors(const FVector[] vector);
     FVector excludeOutlier(const FVector[] vector);
     FVector excludeMostRecent(const FVector[] vector);
+    FVector returnMostRecent(const FVector[] vector);
     void clearGazeDataArray();
 };
