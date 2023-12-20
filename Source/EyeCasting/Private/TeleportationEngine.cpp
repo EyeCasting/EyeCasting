@@ -76,7 +76,8 @@ bool ATeleportationEngine::SyncHapticFeedback()
     ConstructorHelpers::FObjectFinder<UHapticFeedbackEffect_Base> teleportHapticFile(TEXT("/Game/teleportFeedback.haptic");
     ConstructorHelpers::FObjectFinder<UHapticFeedbackEffect_Base> fisheyeHapticFile(TEXT("/Game/fisheyeFeedback.haptic");
     ConstructorHelpers::FObjectFinder<UHapticFeedbackEffect_Base> selectionHapticFile(TEXT("/Game/selectionFeedback.haptic");
-    
+    ConstructorHelpers::FObjectFinder<UHapticFeedbackEffect_Base> fovHapticFile(Text("/Game/fovFeedback.hatpic");
+
     if (teleportHapticFile) {
         teleportationHapticEffect = teleportHapticFile.Object;
     }
@@ -101,32 +102,48 @@ bool ATeleportationEngine::SyncHapticFeedback()
         return false;
     }
 
+    if (fovHapticFile) {
+        fovHapticEffect = fovHapticFile.Object;
+    }
+    else {
+        /* error handling: no haptic file found */
+        return false;
+    }
+
     return true;
 }
 
 FVector ATeleportationEngine::GetRelativeGazeLocation()
 {
+    FVector gazeLocation;
 
     if (EyeTrackingComponent)
     {
         FVector FilteredGazeDirection = EyeTrackingComponent.GetGazeDirection();
 
-        FVector = Transform::InverseTransformLocation(FilteredGazeDirection);
+        gazeLocation = Transform::InverseTransformLocation(FilteredGazeDirection);
     }
-    return FVector::ZeroVector; // Placeholder
+    else {
+        gazeLocation = FVector::ZeroVector;
+    }
+
+    teleportGazeLocation = gazeLocation;
+    return gazeLocation;
 }
 
 bool ATeleportationEngine::TeleportPlayer(FVector TeleportDestination)
 {
     bool teleportSuccessful = false;
 
-    if (ConfirmTeleportDestination(TeleportDestination))
+    confirmTeleport = ConfirmTeleportDestination(TeleportDestination);
+
+    if (confirmTeleport)
     {
         /* Alert Player of Change in View with Haptic Feedback */
         APlayerController::PlayHapticEffect(teleportHapticEffect, Left, 1.0, 0);
         APlayerController::PlayHapticEffect(teleportHapticEffect, Right, 1.0, 0);
 
-        if (InitiateFOVReduction())
+        if (reducedFOV)
         {
             teleportSuccessful = TraverseToGazeLocation(TeleportDestination);
         }
@@ -139,7 +156,13 @@ bool ATeleportationEngine::TeleportPlayer(FVector TeleportDestination)
         return false;
     }
 
-    RestoreNormalFOV();
+    bool playerFOVnormal;
+    playerFOVnormal = RestoreNormalFOV();
+
+    if (!playerFOVnormal) {
+        // IMPORTANT error handling
+        // need to return player FOV back to normal
+    }
 
     if (teleportSuccessful)
         return true;
@@ -147,26 +170,92 @@ bool ATeleportationEngine::TeleportPlayer(FVector TeleportDestination)
         return false;
 }
 
+void ATeleportationEngine::CompleteTeleportSequence()
+{
+    if (!reducedFOV) {
+        // any final steps in teleportation sequence
+    }
+    else {
+        // debug - restore user fov before exiting
+    }
+}
 
 bool ATeleportationEngine::ConfirmTeleportDestination(FVector TeleportDestination)
 {
+    confirmTeleport = false;
     // verify that the player is able to move to the destination
+    if (TeleportDestination != FVector::ZeroVector)
+    {
+        // verify teleport destination is movable to
 
-    return false;
+        confirmTeleport = true;
+    }
+
+    return confirmTeleport;
 }
 
 bool ATeleportationEngine::InitiateFOVReduction()
 {
-    return false;
+    if (confirmTeleport) {
+
+        /* Alert Player of Change in View with Haptic Feedback */
+        APlayerController::PlayHapticEffect(fovHapticEffect, Left, 1.0, 0);
+        APlayerController::PlayHapticEffect(fovHapticEffect, Right, 1.0, 0);
+        
+        // reduce PixelDensity to add blur to user's pov
+        vr.PixelDensity = 0.5;  // value needs testing (1 is clear, 0 blurry)
+
+        // apply other fov reduction techniques
+
+        // set reducedFOV if fov successfully reduced
+        reducedFOV = true;
+    }
+    return reducedFOV;
 }
 
 bool ATeleportationEngine::RestoreNormalFOV()
 {
-    return false;
+    // restore pixel density to default value
+    vr.PixelDensity = 1.0; 
+
+    // restore other fov reduction techniques
+
+    // set reducedFOV if fov successfully restored
+    reducedFOV = false;
+   
+    return !reducedFOV;
 }
 
 bool ATeleportationEngine::TraverseToGazeLocation(FVector TeleportDestination)
 {
+    if (confirmTeleport && reducedFOV)
+    {
+        UWorld currentWorld = UWorld::GetWorld();
+        APlayerController currentPlyrCtrl;
+        ACharacter currCharacter;
+        FVector currLocation;
+        
+        if (currentWorld)
+            currentPlyrCtrl = currentWorld->GetFirstLocalPlayerController();
+        else
+            return false;
+
+        if (currentPlyrCtrl)
+            currCharacter = currentPlyrCtrl->GetPawn();
+        else
+            return false;
+
+        if (currCharacter)
+            currLocation = currCharacter->GetActorLocation();
+        else
+            return false;
+
+        FVector travelVector = teleportGazeDestination - currLocation;
+
+        // actually moving actor to teleportGazeDestination
+
+        return true;
+    }
 
     return false;
 }

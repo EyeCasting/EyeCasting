@@ -17,14 +17,20 @@
 // Unreal Teleport Library
 #include "TeleportationEngine.generated.h"
 
-// Unreal Camera Library
+// Unreal Camera/Character Libraries
 #include "Camera/PlayerCameraManager.h"
+#include "Camera/CameraActor.h"
+#include "GameFramework/Character.h"
 
-// Unreal Haptics Library
+// Unreal Haptics Libraries
 #include "GameFramework/PlayerController.h"
 #include "Haptics/HapticFeedbackEffect_Base.h"
 
-UCLASS()
+// Unreal World/Engine Classes
+#include "Engine/World.h"
+#include "Engine/Engine.h"
+
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class EYECasting_API ATeleportationEngine : public AActor
 {
     GENERATED_BODY()
@@ -44,7 +50,7 @@ public:
     FVector GetRelativeGazeLocation();
 
     UFUNCTION(BlueprintCallable, Category = "Teleportation")
-    bool TeleportPlayer();
+    bool TeleportPlayer(FVector TeleportDestination);
 
     UFUNCTION(BlueprintCallable, Category = "Teleportation")
     void CompleteTeleportSequence();
@@ -76,7 +82,12 @@ private:
     bool RestoreNormalFOV();
     bool TraverseToGazeLocation(FVector TeleportDestination);
 
+    bool reducedFOV, confirmTeleport;
+
+    FVector teleportGazeDestination;
+
     UHapticFeedbackEffect_Base teleportHapticEffect;
     UHapticFeedbackEffect_Base fisheyeHapticEffect;
     UHapticFeedbackEffect_Base selectionHapticEffect;
+    UHapticFeedbackEffect_Base fovHapticEffect;
 };
